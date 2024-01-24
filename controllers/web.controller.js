@@ -47,7 +47,7 @@ const estructuraInicial = [
     id: '2',
     index: currentIndex++,
     tabID: currentIndex,
-    tabName: 'Usuarios',
+    tabName: 'Mantenimiento - Usuarios',
     title: '',
     description: '',
     parentId: -1,
