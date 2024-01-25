@@ -9,7 +9,7 @@ function getValidacion(Accion, user, password) {
     // create mysql connection
     const connection = db.getConnection();
     return new Promise((resolve, reject) => {
-        connection.query("CALL sp_sgm_usuarios (?, ?, '', ?, '', '')", [Accion, user, "", password, ""],
+        connection.query("CALL sp_sgm_usuarios (?, ?, ?, ?, ?, ?) ", [Accion, user, "", password, "",""],
             function (error, results, fields) {
 
                 if (error) {
@@ -20,7 +20,6 @@ function getValidacion(Accion, user, password) {
             });
     });
 }
-
 // LOGIN
 const token = async (request, response) => {
     try {
@@ -29,7 +28,7 @@ const token = async (request, response) => {
         // si se encontro debe generar el jwt sino return
         const _result = await getValidacion("VALIDARUSUARIO", Sgm_cUsuario, Sgm_cContrasena);
 
-        //console.log(request.body);
+        console.log(_result);
 
 
         let token="";
