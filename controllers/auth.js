@@ -28,7 +28,7 @@ const token = async (request, response) => {
         // si se encontro debe generar el jwt sino return
         const _result = await getValidacion("VALIDARUSUARIO", Sgm_cUsuario, Sgm_cContrasena);
 
-        console.log(_result);
+        //console.log(_result);
 
 
         let token="";
