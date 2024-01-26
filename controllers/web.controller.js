@@ -355,8 +355,8 @@ const handleFileUpload = async (req, res) => {
 
       //console.log('_filename',_filename);
 
-      console.log('req.body:', req.body);
-      console.log('req.file:', req.file);
+      // console.log('req.body:', req.body);
+      // console.log('req.file:', req.file);
 
       if (err) {
         console.error('Error al cargar el archivo:', err.message);
@@ -375,24 +375,25 @@ const handleFileUpload = async (req, res) => {
 
       // Verifica si el archivo ya existe en la ruta especificada
       if (fs.existsSync(filePath)) {
-        console.log('¡Error! El archivo ya existe en la ruta especificada.');
+        //console.log('¡Error! El archivo ya existe en la ruta especificada.');
         return res.status(400).json({ error: 'El archivo ya existe.' });
       }
 
       // Escribe el archivo al sistema de archivos
       fs.writeFile(filePath, req.file.buffer, (err) => {
         if (err) {
-          console.error('Error al escribir el archivo en el sistema de archivos:', err);
+          //console.error('Error al escribir el archivo en el sistema de archivos:', err);
           return res.status(500).json({ error: 'Error en la carga de archivos.' });
         }
 
-        console.log('Archivo guardado con éxito en:', filePath);
+        //console.log('Archivo guardado con éxito en:', filePath);
+
 
         res.status(200).json({ message: 'Archivo subido con éxito.' });
       });
     });
   } catch (error) {
-    console.error('Error en la carga de archivos:', error.message);
+    //console.error('Error en la carga de archivos:', error.message);
     res.status(500).json({ error: 'Error en la carga de archivos.' });
   }
 };
