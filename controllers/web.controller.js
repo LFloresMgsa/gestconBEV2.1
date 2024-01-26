@@ -8,7 +8,14 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const mime = require('mime');
-
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // límite de tamaño del archivo
+  },
+});
 const db = require("../database/db.js");
 
 const ouUsuario = require("../models/sgm_usuarios.js");
@@ -90,8 +97,9 @@ const estructuraInicial = [
     path: 'categoria',
     tabChildren: leerDirectorio('', currentIndex, 1), // Llama a la función para generar la estructura de "Categoria"
   },
- 
+
 ];
+
 
 const bytesToSize = (bytes) => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -144,7 +152,6 @@ function leerDirectorio(dir, parent, level, _roles, _security) {
     }
 
 
-
     const elemento = {
       id: String(currentIndex),
       index: currentIndex++,
@@ -174,36 +181,10 @@ function leerDirectorio(dir, parent, level, _roles, _security) {
   });
 
   return elementos;
+
 }
 
-function leerDirectorioyArchivos(dir, parent) {
 
-
-  const rutaCompleta = path.join(directorioBase, dir);
-  const archivos = fs.readdirSync(rutaCompleta);
-
-  const elementos = [];
-
-  archivos.forEach(archivo => {
-    const rutaArchivo = path.join(rutaCompleta, archivo);
-    const esDirectorio = fs.statSync(rutaArchivo).isDirectory();
-
-    const elemento = {
-      nombre: archivo,
-      esDirectorio: esDirectorio,
-      ruta: rutaArchivo,
-      padre: parent
-    };
-
-    if (esDirectorio) {
-      elemento.hijos = leerDirectorio(path.join(dir, archivo), archivo, roles);
-    }
-
-    elementos.push(elemento);
-  });
-
-  return elementos;
-}
 
 const getPathv2 = async (req, res) => {
   const category = req.query.category;
@@ -333,7 +314,7 @@ const getUsuario = async (request, response) => {
     ouUsuario.Sgm_cContrasena = params.Sgm_cContrasena;
     ouUsuario.Sgm_cObservaciones = params.Sgm_cObservaciones;
     ouUsuario.Sgm_cPerfil = params.Sgm_cPerfil;
-    
+
 
     connection.query("CALL sp_sgm_usuarios (?,?,?,?,?,?) ", [
       ouUsuario.Accion, ouUsuario.Sgm_cUsuario, ouUsuario.Sgm_cNombre,
@@ -361,6 +342,61 @@ const getUsuario = async (request, response) => {
   }
 };
 
+const handleFileUpload = async (req, res) => {
+
+
+
+  try {
+    // Utiliza multer para manejar la carga de archivos
+    upload.single('file')(req, res, (err) => {
+
+      let _filename = "";
+      _filename = req.body.filename;
+
+      //console.log('_filename',_filename);
+
+      console.log('req.body:', req.body);
+      console.log('req.file:', req.file);
+
+      if (err) {
+        console.error('Error al cargar el archivo:', err.message);
+        return res.status(500).json({ error: 'Error en la carga de archivos.' });
+      }
+
+      // Verifica que req.file y req.body estén definidos
+      if (!req.file || !req.body.urlDestino) {
+        return res.status(400).json({ error: 'Falta el parámetro "file" o "urlDestino" en la solicitud.' });
+      }
+
+      // Utiliza obtenerRutaDelArchivo con la categoría proporcionada
+      let categoryPath = obtenerRutaDelArchivo(req.body.urlDestino, '');
+      const filePath = path.join(categoryPath, _filename);
+
+
+      // Verifica si el archivo ya existe en la ruta especificada
+      if (fs.existsSync(filePath)) {
+        console.log('¡Error! El archivo ya existe en la ruta especificada.');
+        return res.status(400).json({ error: 'El archivo ya existe.' });
+      }
+
+      // Escribe el archivo al sistema de archivos
+      fs.writeFile(filePath, req.file.buffer, (err) => {
+        if (err) {
+          console.error('Error al escribir el archivo en el sistema de archivos:', err);
+          return res.status(500).json({ error: 'Error en la carga de archivos.' });
+        }
+
+        console.log('Archivo guardado con éxito en:', filePath);
+
+        res.status(200).json({ message: 'Archivo subido con éxito.' });
+      });
+    });
+  } catch (error) {
+    console.error('Error en la carga de archivos:', error.message);
+    res.status(500).json({ error: 'Error en la carga de archivos.' });
+  }
+};
+
 // export functions
 module.exports = {
   getUsuario,
@@ -368,4 +404,5 @@ module.exports = {
   serveFile,
   getPathv2,
   getDirectory,
+  handleFileUpload,
 };
