@@ -27,6 +27,8 @@ router.get('/archivos', webController.serveFile);
 
 // servicios con seguridad JWT
 router.post('/sgm_usuarios',webController.getUsuario);
+
+router.post('/sgm_tabparametros',webController.getTabParametros);
 //router.post('/sgm_usuarios/auth/',checkAuth,webController.getUsuario);
 //router.post('/lgm_catalogo_bs/auth/',checkAuth,webController.getCatalogo);
 

@@ -19,7 +19,7 @@ const upload = multer({
 const db = require("../database/db.js");
 
 const ouUsuario = require("../models/sgm_usuarios.js");
-
+const onTabParametros = require("../models/sgm_tabparametros.js");
 //get all data api with store procedure
 
 const directorioBase = 'assets/documents/categoria';
@@ -342,61 +342,98 @@ const getUsuario = async (request, response) => {
   }
 };
 
+const getTabParametros = async (request, response) => {
+
+
+
+  let connection;
+  try {
+    // create mysql connection
+    connection = await mysql.createConnection(sc.dbStringConection());
+
+    var params = request.body;
+
+
+    onTabParametros.Accion = params.Accion;
+    onTabParametros.Sgm_cRestricciones = params.Sgm_cRestricciones;
+    onTabParametros.Sgm_cTipo = params.Sgm_cTipo;
+
+
+    connection.query("CALL sp_sgm_tabparametros (?,?,?) ", [
+      onTabParametros.Accion, onTabParametros.Sgm_cRestricciones, onTabParametros.Sgm_cTipo
+    ], function (error, results, fields) {
+
+      if (error) {
+
+        response.json({ error: error.message });
+
+      } else {
+
+
+
+        response.json(results);
+      }
+    });
+  } catch (error) {
+    response.status(500);
+    response.send(error.message);
+  } finally {
+    if (connection) {
+      connection.end();
+    }
+  }
+};
+
+
 const handleFileUpload = async (req, res) => {
-
-
-
   try {
     // Utiliza multer para manejar la carga de archivos
-    upload.single('file')(req, res, (err) => {
-
-      let _filename = "";
-      _filename = req.body.filename;
-
-      //console.log('_filename',_filename);
-
-      // console.log('req.body:', req.body);
-      // console.log('req.file:', req.file);
-
+    upload.array('file')(req, res, (err) => {
       if (err) {
-        console.error('Error al cargar el archivo:', err.message);
+        console.error('Error al cargar los archivos:', err.message);
         return res.status(500).json({ error: 'Error en la carga de archivos.' });
       }
 
-      // Verifica que req.file y req.body estén definidos
-      if (!req.file || !req.body.urlDestino) {
-        return res.status(400).json({ error: 'Falta el parámetro "file" o "urlDestino" en la solicitud.' });
+      // Verifica que req.files y req.body estén definidos
+      if (!req.files || !req.body.urlDestino) {
+        return res.status(400).json({ error: 'Falta el parámetro "files" o "urlDestino" en la solicitud.' });
       }
 
-      // Utiliza obtenerRutaDelArchivo con la categoría proporcionada
-      let categoryPath = obtenerRutaDelArchivo(req.body.urlDestino, '');
-      const filePath = path.join(categoryPath, _filename);
+      const files = req.files;
 
+      // Itera sobre cada archivo y guarda en el sistema de archivos
+      for (const file of files) {
+        const _filename = file.originalname; // Utiliza el nombre original del archivo proporcionado por multer
 
-      // Verifica si el archivo ya existe en la ruta especificada
-      if (fs.existsSync(filePath)) {
-        //console.log('¡Error! El archivo ya existe en la ruta especificada.');
-        return res.status(400).json({ error: 'El archivo ya existe.' });
-      }
+        // Utiliza obtenerRutaDelArchivo con la categoría proporcionada
+        let categoryPath = obtenerRutaDelArchivo(req.body.urlDestino, '');
+        const filePath = path.join(categoryPath, _filename);
 
-      // Escribe el archivo al sistema de archivos
-      fs.writeFile(filePath, req.file.buffer, (err) => {
-        if (err) {
-          //console.error('Error al escribir el archivo en el sistema de archivos:', err);
-          return res.status(500).json({ error: 'Error en la carga de archivos.' });
+        // Verifica si el archivo ya existe en la ruta especificada
+        if (fs.existsSync(filePath)) {
+          return res.status(400).json({ error: `El archivo ${_filename} ya existe en la ruta especificada.` });
         }
 
-        //console.log('Archivo guardado con éxito en:', filePath);
+        // Escribe el archivo al sistema de archivos
+        fs.writeFile(filePath, file.buffer, (err) => {
+          if (err) {
+            console.error('Error al escribir el archivo en el sistema de archivos:', err);
+            return res.status(500).json({ error: 'Error en la carga de archivos.' });
+          }
+        });
+      }
 
-
-        res.status(200).json({ message: 'Archivo subido con éxito.' });
-      });
+      // Envia una única respuesta después de procesar los archivos
+      return res.status(200).json({ message: 'Archivos subidos con éxito.' });
     });
   } catch (error) {
-    //console.error('Error en la carga de archivos:', error.message);
-    res.status(500).json({ error: 'Error en la carga de archivos.' });
+    console.error('Error en la carga de archivos:', error.message);
+    return res.status(500).json({ error: 'Error en la carga de archivos.' });
   }
 };
+
+
+
 
 // export functions
 module.exports = {
@@ -406,4 +443,5 @@ module.exports = {
   getPathv2,
   getDirectory,
   handleFileUpload,
+  getTabParametros,
 };
