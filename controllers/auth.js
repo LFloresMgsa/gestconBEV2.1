@@ -9,7 +9,7 @@ function getValidacion(Accion, user, password) {
     // create mysql connection
     const connection = db.getConnection();
     return new Promise((resolve, reject) => {
-        connection.query("CALL sp_sgm_usuarios (?, ?, ?, ?, ?, ?) ", [Accion, user, "", password, "",""],
+        connection.query("CALL sp_sgm_usuarios (?, ?, ?, ?, ?, ?, ?) ", [Accion, user, "", password, "", "", ""],
             function (error, results, fields) {
 
                 if (error) {
@@ -31,9 +31,9 @@ const token = async (request, response) => {
         //console.log(_result);
 
 
-        let token="";
-        if (_result && _result[0].length > 0 ) {
-            if ( _result[0][0].Sgm_cUsuario){
+        let token = "";
+        if (_result && _result[0].length > 0) {
+            if (_result[0][0].Sgm_cUsuario) {
                 token = JWT.sign({ Sgm_cUsuario }, "nfb32iur32ibfqfvi3vf932bg932g932", { expiresIn: 360000 });
             }
             else {
@@ -44,10 +44,10 @@ const token = async (request, response) => {
                         }
                     ]
                 })
-              }
+            }
 
 
-          } else {
+        } else {
             // Mensaje de error
             return response.status(422).json({
                 errors: [
@@ -56,13 +56,13 @@ const token = async (request, response) => {
                     }
                 ]
             })
-          }
+        }
 
 
 
 
-       // console.log(token);
-        
+        // console.log(token);
+
         response.json({
             token
         });

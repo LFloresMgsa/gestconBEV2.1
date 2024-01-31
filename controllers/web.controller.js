@@ -57,7 +57,7 @@ const estructuraInicial = [
     parentId: -1,
     level: 0,
     authorizedRoles: '65;-1;',
-    authorizedRolesAllString: ' Root, Admin ',
+    authorizedRolesAllString: ' Root ',
     administratorRoles: '65;',
     tabOrder: 1,
     isVisible: true,
@@ -80,7 +80,7 @@ const estructuraInicial = [
     parentId: -1,
     level: 0,
     authorizedRoles: '65;-1;',
-    authorizedRolesAllString: ' Root, Admin ',
+    authorizedRolesAllString: ' Root ',
     administratorRoles: '65;',
     tabOrder: 1,
     isVisible: true,
@@ -334,11 +334,17 @@ const getUsuario = async (request, response) => {
     ouUsuario.Sgm_cContrasena = params.Sgm_cContrasena;
     ouUsuario.Sgm_cObservaciones = params.Sgm_cObservaciones;
     ouUsuario.Sgm_cPerfil = params.Sgm_cPerfil;
+    ouUsuario.Sgm_cAccesodeSubida = params.Sgm_cAccesodeSubida;
 
+    
+   // console.log(ouUsuario.Sgm_cAccesodeSubida);
 
-    connection.query("CALL sp_sgm_usuarios (?,?,?,?,?,?) ", [
+    connection.query("CALL sp_sgm_usuarios (?,?,?,?,?,?,?) ", [
       ouUsuario.Accion, ouUsuario.Sgm_cUsuario, ouUsuario.Sgm_cNombre,
-      ouUsuario.Sgm_cContrasena, ouUsuario.Sgm_cObservaciones, ouUsuario.Sgm_cPerfil
+      ouUsuario.Sgm_cContrasena, ouUsuario.Sgm_cObservaciones, ouUsuario.Sgm_cPerfil,
+      ouUsuario.Sgm_cAccesodeSubida
+
+      
     ], function (error, results, fields) {
 
       if (error) {
