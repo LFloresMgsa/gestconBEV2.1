@@ -17,6 +17,7 @@ const db = require("../database/db.js");
 
 const ouUsuario = require("../models/sgm_usuarios.js");
 const onTabParametros = require("../models/sgm_tabparametros.js");
+const onActualizarArchivo = require("../models/sgm_actualizararchivos.js");
 //get all data api with store procedure
 
 const directorioBase = 'assets/documents/categoria';
@@ -412,29 +413,84 @@ const getTabParametros = async (request, response) => {
   }
 };
 
+const getActualizarArchivo = async (request, response) => {
 
+
+
+  let connection;
+  try {
+    // create mysql connection
+    connection = await mysql.createConnection(sc.dbStringConection());
+
+    var params = request.body;
+
+
+    onActualizarArchivo.Accion = params.Accion;
+    onActualizarArchivo.Sgm_cUrlActual = params.Sgm_cUrlActual;
+    onActualizarArchivo.Sgm_cFilename = params.Sgm_cFilename;
+    onActualizarArchivo.Sgm_cNombreUsuario = params.Sgm_cNombreUsuario;
+    onActualizarArchivo.Sgm_cFechaMod = params.Sgm_cFechaMod;
+
+
+    connection.query("CALL sp_sgm_archivosporusuario (?,?,?,?,?) ", [
+      onActualizarArchivo.Accion, onActualizarArchivo.Sgm_cUrlActual, 
+      onActualizarArchivo.Sgm_cFilename,onActualizarArchivo.Sgm_cNombreUsuario,
+      onActualizarArchivo.Sgm_cFechaMod
+    ], function (error, results, fields) {
+
+      if (error) {
+
+        response.json({ error: error.message });
+
+      } else {
+
+
+
+        response.json(results);
+      }
+    });
+  } catch (error) {
+    response.status(500);
+    response.send(error.message);
+  } finally {
+    if (connection) {
+      connection.end();
+    }
+  }
+};
 const handleFileUpload = async (req, res) => {
   try {
     // Utiliza multer para manejar la carga de archivos
-    upload.array('file')(req, res, (err) => {
+    upload.array('Sgm_cFile')(req, res, (err) => {
+      //console.log(upload);
       if (err) {
         console.error('Error al cargar los archivos:', err.message);
         return res.status(500).json({ error: 'Error en la carga de archivos.' });
       }
 
       // Verifica que req.files y req.body estén definidos
-      if (!req.files || !req.body.urlDestino) {
-        return res.status(400).json({ error: 'Falta el parámetro "files" o "urlDestino" en la solicitud.' });
+      if (!req.files ) {
+        return res.status(400).json({ error: 'Falta el parámetro "files" en la solicitud.' });
+       
       }
-
+      //console.log(req.files);
+      // Verifica que req.files y req.body estén definidos
+      if (!req.body.Sgm_cUrlActual ) {
+        return res.status(400).json({ error: 'Falta "UrlActual" en la solicitud.' });
+      }
+      //console.log(req.body.Sgm_cUrlActual);
       const files = req.files;
+      const nombreUsuario = req.body.Sgm_cNombreUsuario;
 
+      // // console.log(files);
+      // console.log(nombreUsuario);
       // Itera sobre cada archivo y guarda en el sistema de archivos
       for (const file of files) {
         const _filename = file.originalname; // Utiliza el nombre original del archivo proporcionado por multer
 
+        console.log("Nombre de usuario que subió el archivo:", nombreUsuario);
         // Utiliza obtenerRutaDelArchivo con la categoría proporcionada
-        let categoryPath = obtenerRutaDelArchivo(req.body.urlDestino, '');
+        let categoryPath = obtenerRutaDelArchivo(req.body.Sgm_cUrlActual, '');
         const filePath = path.join(categoryPath, _filename);
 
         // Verifica si el archivo ya existe en la ruta especificada
@@ -472,4 +528,5 @@ module.exports = {
   getDirectory,
   handleFileUpload,
   getTabParametros,
+  getActualizarArchivo
 };
