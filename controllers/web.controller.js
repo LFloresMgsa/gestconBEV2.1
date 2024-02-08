@@ -488,7 +488,7 @@ const handleFileUpload = async (req, res) => {
       for (const file of files) {
         const _filename = file.originalname; // Utiliza el nombre original del archivo proporcionado por multer
 
-        console.log("Nombre de usuario que subió el archivo:", nombreUsuario);
+        //console.log("Nombre de usuario que subió el archivo:", nombreUsuario);
         // Utiliza obtenerRutaDelArchivo con la categoría proporcionada
         let categoryPath = obtenerRutaDelArchivo(req.body.Sgm_cUrlActual, '');
         const filePath = path.join(categoryPath, _filename);
