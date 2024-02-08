@@ -17,7 +17,7 @@ const db = require("../database/db.js");
 
 const ouUsuario = require("../models/sgm_usuarios.js");
 const onTabParametros = require("../models/sgm_tabparametros.js");
-const onActualizarArchivo = require("../models/sgm_actualizararchivos.js");
+const onArchivo = require("../models/sgm_archivos.js");
 //get all data api with store procedure
 
 const directorioBase = 'assets/documents/categoria';
@@ -243,7 +243,6 @@ const getPathv2 = async (req, res) => {
           lastModified: `${dia}/${mes}/${anio} ${horas}:${minutos}:${segundos}`,
         };
       });
-
       res.json({ files: fileDetails });
     });
   } catch (error) {
@@ -413,7 +412,7 @@ const getTabParametros = async (request, response) => {
   }
 };
 
-const getActualizarArchivo = async (request, response) => {
+const getArchivo = async (request, response) => {
 
 
 
@@ -425,17 +424,18 @@ const getActualizarArchivo = async (request, response) => {
     var params = request.body;
 
 
-    onActualizarArchivo.Accion = params.Accion;
-    onActualizarArchivo.Sgm_cUrlActual = params.Sgm_cUrlActual;
-    onActualizarArchivo.Sgm_cFilename = params.Sgm_cFilename;
-    onActualizarArchivo.Sgm_cNombreUsuario = params.Sgm_cNombreUsuario;
-    onActualizarArchivo.Sgm_cFechaMod = params.Sgm_cFechaMod;
+    onArchivo.Accion = params.Accion;
+    onArchivo.Sgm_cTipo = params.Sgm_cTipo;
+    onArchivo.Sgm_cUrlActual = params.Sgm_cUrlActual;
+    onArchivo.Sgm_cFilename = params.Sgm_cFilename;
+    onArchivo.Sgm_cNombreUsuario = params.Sgm_cNombreUsuario;
+    onArchivo.Sgm_cFechaMod = params.Sgm_cFechaMod;
+    onArchivo.Sgm_cTamanio = params.Sgm_cTamanio;
 
-
-    connection.query("CALL sp_sgm_archivosporusuario (?,?,?,?,?) ", [
-      onActualizarArchivo.Accion, onActualizarArchivo.Sgm_cUrlActual, 
-      onActualizarArchivo.Sgm_cFilename,onActualizarArchivo.Sgm_cNombreUsuario,
-      onActualizarArchivo.Sgm_cFechaMod
+    connection.query("CALL sp_sgm_archivosporusuario (?,?,?,?,?,?,?) ", [
+      onArchivo.Accion, onArchivo.Sgm_cUrlActual, 
+      onArchivo.Sgm_cFilename,onArchivo.Sgm_cNombreUsuario,
+      onArchivo.Sgm_cFechaMod, onArchivo.Sgm_cTamanio, onArchivo.Sgm_cTipo
     ], function (error, results, fields) {
 
       if (error) {
@@ -518,7 +518,6 @@ const handleFileUpload = async (req, res) => {
 
 
 
-
 // export functions
 module.exports = {
   getUsuario,
@@ -528,5 +527,6 @@ module.exports = {
   getDirectory,
   handleFileUpload,
   getTabParametros,
-  getActualizarArchivo
+  getArchivo
+
 };

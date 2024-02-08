@@ -32,6 +32,7 @@ router.post('/sgm_tabparametros',webController.getTabParametros);
 router.post('/sgm_usuarios/auth/',checkAuth,webController.getUsuario);
 //router.post('/lgm_catalogo_bs/auth/',checkAuth,webController.getCatalogo);
 
+
 router.post('/cargararchivo', webController.handleFileUpload);
-router.post('/actualizaarchivo', webController.getActualizarArchivo);
+router.post('/obtenerarchivo', webController.getArchivo);
 module.exports = router;

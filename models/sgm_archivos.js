@@ -8,6 +8,7 @@ const sgm_archivosporusuario = sequelize.define('sgm_archivosporusuario', {
     Accion: { type: DataTypes.STRING },    
     Sgm_cUrlActual: { type: DataTypes.STRING },
     Sgm_cFilename: { type: DataTypes.STRING },
+    Sgm_cTamanio: { type: DataTypes.STRING },
     Sgm_cNombreUsuario: { type: DataTypes.STRING },
     Sgm_cFechaMod: { type: DataTypes.DATE },
 })
